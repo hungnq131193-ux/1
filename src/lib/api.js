@@ -3,6 +3,7 @@
 
 export function familyOf(model = '') {
   const m = model.toLowerCase();
+  if (m.includes('auto')) return 'auto';
   if (m.includes('claude')) return 'claude';
   if (m.includes('grok')) return 'grok';
   if (m.includes('gpt') || m.includes('codex')) return 'codex';

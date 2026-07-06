@@ -3,11 +3,12 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { familyOf } from '../lib/api';
 
-const FAMILY_BORDER = {
-  claude: 'border-l-channel-claude',
-  grok: 'border-l-channel-grok',
-  codex: 'border-l-channel-codex',
-  other: 'border-l-channel-other',
+const FAMILY_DOT = {
+  claude: 'bg-channel-claude',
+  auto: 'bg-channel-auto',
+  grok: 'bg-channel-grok',
+  codex: 'bg-channel-codex',
+  other: 'bg-channel-other',
 };
 
 function textOf(content) {
@@ -27,14 +28,22 @@ export default function MessageBubble({ message, model }) {
   const attachments = message.attachments || [];
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} px-4 py-2`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} px-4 py-2.5`}>
       <div
-        className={`max-w-[85%] sm:max-w-[70%] rounded-card px-4 py-3 ${
+        className={
           isUser
-            ? 'bubble-user bg-brass/15 border border-brass/30'
-            : `bubble-assistant bg-ink-surface border-l-[3px] ${FAMILY_BORDER[family]} border-t border-r border-b border-t-ink-line border-r-ink-line border-b-ink-line`
-        }`}
+            ? 'bubble-user max-w-[85%] sm:max-w-[70%] rounded-card px-4 py-3 bg-clay/15 border border-clay/30'
+            : 'max-w-[85%] sm:max-w-[85%] w-full'
+        }
       >
+        {!isUser && (
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${FAMILY_DOT[family]}`} />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
+              {model || 'assistant'}
+            </span>
+          </div>
+        )}
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {attachments.map((att, i) =>

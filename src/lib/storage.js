@@ -4,7 +4,7 @@ const SETTINGS_KEY = 'nghichat:settings';
 export function defaultSettings() {
   return {
     apiKey: '',
-    model: 'nghi/claude-sonnet-4.6',
+    model: 'nghi/auto',
     smallModel: 'nghi/claude-haiku-4.5',
     systemPrompt: '',
     theme: 'dark',

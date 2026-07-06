@@ -6,21 +6,22 @@ export default {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#14161A',
-          surface: '#1E2126',
-          line: '#2A2E35',
+          DEFAULT: '#262624',
+          surface: '#30302E',
+          line: '#3E3B36',
         },
         paper: {
-          DEFAULT: '#F7F6F3',
+          DEFAULT: '#F5F4EE',
           surface: '#FFFFFF',
-          line: '#E4E2DC',
+          line: '#E7E4DA',
         },
-        brass: {
-          DEFAULT: '#C9A227',
-          dark: '#B8911F',
+        clay: {
+          DEFAULT: '#D97757',
+          dark: '#C2643F',
         },
         channel: {
-          claude: '#C9A227',
+          claude: '#D97757',
+          auto: '#6C8EEF',
           grok: '#8B7FD9',
           codex: '#4FB8A6',
           other: '#8B909A',
