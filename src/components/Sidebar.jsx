@@ -3,6 +3,7 @@ import { familyOf } from '../lib/api';
 
 const FAMILY_DOT = {
   claude: 'bg-channel-claude',
+  auto: 'bg-channel-auto',
   grok: 'bg-channel-grok',
   codex: 'bg-channel-codex',
   other: 'bg-channel-other',
@@ -42,7 +43,7 @@ export default function Sidebar({
       <div className="flex items-center gap-2 p-3 border-b border-ink-line">
         <button
           onClick={onNew}
-          className="flex-1 flex items-center gap-2 px-3 py-2 rounded-card bg-brass text-ink font-display font-semibold text-sm hover:bg-brass-dark transition-colors"
+          className="flex-1 flex items-center gap-2 px-3 py-2 rounded-card border border-ink-line text-white/85 font-display font-semibold text-sm hover:border-clay/50 hover:text-clay transition-colors"
         >
           <Plus size={16} strokeWidth={2.5} />
           Trò chuyện mới

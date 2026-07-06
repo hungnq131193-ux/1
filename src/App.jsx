@@ -99,7 +99,18 @@ export default function App() {
     abortRef.current = controller;
 
     let assistantText = '';
+    let lastFlush = 0;
+    const flush = () => {
+      updateConversation(conv.id, (c) => {
+        const msgs = [...c.messages];
+        msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantText };
+        return { ...c, messages: msgs, updatedAt: Date.now() };
+      });
+    };
+
     try {
+      // Ghi state/localStorage tối đa ~16 lần/giây thay vì mỗi token — tránh giật lag
+      // khi model trả lời nhanh (re-render + serialize cả hội thoại mỗi lần rất tốn).
       for await (const chunk of streamChat({
         messages: historyForApi,
         model: conv.model || settings.model,
@@ -109,13 +120,14 @@ export default function App() {
       })) {
         if (chunk.type === 'text') {
           assistantText += chunk.text;
-          updateConversation(conv.id, (c) => {
-            const msgs = [...c.messages];
-            msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: assistantText };
-            return { ...c, messages: msgs, updatedAt: Date.now() };
-          });
+          const now = performance.now();
+          if (now - lastFlush > 60) {
+            lastFlush = now;
+            flush();
+          }
         }
       }
+      flush();
     } catch (err) {
       if (err.name !== 'AbortError') {
         setErrorMsg(err.message || 'Đã có lỗi xảy ra khi gọi API.');
@@ -127,6 +139,8 @@ export default function App() {
           };
           return { ...c, messages: msgs };
         });
+      } else {
+        flush();
       }
     } finally {
       setIsStreaming(false);

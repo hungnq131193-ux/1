@@ -1,40 +1,52 @@
 import { useState } from 'react';
 import { X, Moon, Sun } from 'lucide-react';
 import { familyOf } from '../lib/api';
-
-const QUICK_MODELS = [
-  { label: 'Claude Sonnet', value: 'nghi/claude-sonnet-4.6' },
-  { label: 'Claude Haiku', value: 'nghi/claude-haiku-4.5' },
-  { label: 'Grok 4.3', value: 'grok-4.3' },
-  { label: 'GPT-5.5', value: 'gpt-5.5' },
-];
+import { MODEL_GROUPS, ALL_MODEL_VALUES } from '../lib/models';
 
 const FAMILY_DOT = {
   claude: 'bg-channel-claude',
+  auto: 'bg-channel-auto',
   grok: 'bg-channel-grok',
   codex: 'bg-channel-codex',
   other: 'bg-channel-other',
 };
 
+const CUSTOM_VALUE = '__custom__';
+
 export default function SettingsDialog({ settings, onSave, onClose }) {
   const [draft, setDraft] = useState(settings);
+  const [customMode, setCustomMode] = useState(!ALL_MODEL_VALUES.includes(settings.model));
 
   const handleSave = () => {
     onSave(draft);
     onClose();
   };
 
+  const handleModelSelect = (e) => {
+    const value = e.target.value;
+    if (value === CUSTOM_VALUE) {
+      setCustomMode(true);
+      return;
+    }
+    setCustomMode(false);
+    setDraft({ ...draft, model: value });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4">
-      <div className="w-full sm:max-w-md bg-ink-surface border border-ink-line rounded-t-card sm:rounded-card p-5 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+      <div className="settings-dialog w-full sm:max-w-md bg-ink-surface border border-ink-line rounded-t-card sm:rounded-card p-5 max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="font-display font-semibold text-lg">Cài đặt</h2>
-          <button onClick={onClose} className="p-1 text-white/50 hover:text-white" aria-label="Đóng">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-white/50 hover:bg-white/5 hover:text-white transition-colors"
+            aria-label="Đóng"
+          >
             <X size={20} />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
             <label className="block text-xs font-mono uppercase tracking-wider text-white/45 mb-1.5">
               API key (nghimmo.com)
@@ -44,7 +56,7 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
               value={draft.apiKey}
               onChange={(e) => setDraft({ ...draft, apiKey: e.target.value })}
               placeholder="sk-xxxxxxxxxxxx"
-              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-brass text-sm font-mono"
+              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-clay text-sm font-mono"
             />
             <p className="text-xs text-white/35 mt-1.5">
               Chỉ lưu trong trình duyệt của bạn (localStorage), không gửi đi đâu khác ngoài
@@ -57,29 +69,37 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
             <label className="block text-xs font-mono uppercase tracking-wider text-white/45 mb-1.5">
               Model
             </label>
-            <input
-              type="text"
-              value={draft.model}
-              onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-brass text-sm font-mono mb-2"
-            />
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_MODELS.map((m) => (
-                <button
-                  key={m.value}
-                  onClick={() => setDraft({ ...draft, model: m.value })}
-                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
-                    draft.model === m.value
-                      ? 'border-brass bg-brass/10 text-brass'
-                      : 'border-ink-line text-white/60 hover:border-white/30'
-                  }`}
-                  type="button"
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full ${FAMILY_DOT[familyOf(m.value)]}`} />
-                  {m.label}
-                </button>
+            <select
+              value={customMode ? CUSTOM_VALUE : draft.model}
+              onChange={handleModelSelect}
+              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-clay text-sm"
+            >
+              {MODEL_GROUPS.map((group) => (
+                <optgroup label={group.label} key={group.label}>
+                  {group.models.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
-            </div>
+              <option value={CUSTOM_VALUE}>Khác… (nhập tên model)</option>
+            </select>
+
+            {customMode ? (
+              <input
+                type="text"
+                value={draft.model}
+                onChange={(e) => setDraft({ ...draft, model: e.target.value })}
+                placeholder="vd: grok-4.3, gpt-5.5…"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-clay text-sm font-mono"
+              />
+            ) : (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-white/45">
+                <span className={`h-1.5 w-1.5 rounded-full ${FAMILY_DOT[familyOf(draft.model)]}`} />
+                {draft.model}
+              </div>
+            )}
           </div>
 
           <div>
@@ -91,7 +111,7 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
               onChange={(e) => setDraft({ ...draft, systemPrompt: e.target.value })}
               rows={3}
               placeholder="Ví dụ: Trả lời ngắn gọn, bằng tiếng Việt…"
-              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-brass text-sm resize-none"
+              className="w-full px-3 py-2 rounded-lg bg-ink border border-ink-line outline-none focus:border-clay text-sm resize-none"
             />
           </div>
 
@@ -104,7 +124,7 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
                 onClick={() => setDraft({ ...draft, theme: 'dark' })}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
                   draft.theme === 'dark'
-                    ? 'border-brass bg-brass/10 text-brass'
+                    ? 'border-clay bg-clay/10 text-clay'
                     : 'border-ink-line text-white/60'
                 }`}
                 type="button"
@@ -115,7 +135,7 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
                 onClick={() => setDraft({ ...draft, theme: 'light' })}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
                   draft.theme === 'light'
-                    ? 'border-brass bg-brass/10 text-brass'
+                    ? 'border-clay bg-clay/10 text-clay'
                     : 'border-ink-line text-white/60'
                 }`}
                 type="button"
@@ -128,7 +148,7 @@ export default function SettingsDialog({ settings, onSave, onClose }) {
 
         <button
           onClick={handleSave}
-          className="w-full mt-5 py-2.5 rounded-lg bg-brass text-ink font-semibold text-sm hover:bg-brass-dark transition-colors"
+          className="w-full mt-6 py-2.5 rounded-lg bg-clay text-white font-semibold text-sm hover:bg-clay-dark transition-colors"
         >
           Lưu cài đặt
         </button>

@@ -27,16 +27,16 @@ html.light body {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2e35;
+  background: #3e3b36;
   border-radius: 8px;
 }
 html.light ::-webkit-scrollbar-thumb {
-  background: #e4e2dc;
+  background: #e7e4da;
 }
 
 /* Focus rõ ràng cho keyboard nav */
 :focus-visible {
-  outline: 2px solid #c9a227;
+  outline: 2px solid #d97757;
   outline-offset: 2px;
 }
 
@@ -55,8 +55,8 @@ html.light ::-webkit-scrollbar-thumb {
   margin-bottom: 0;
 }
 .msg-content pre {
-  background: #0F1013;
-  border: 1px solid #2A2E35;
+  background: #1C1B19;
+  border: 1px solid #3E3B36;
   border-radius: 10px;
   padding: 12px 14px;
   overflow-x: auto;
@@ -65,15 +65,15 @@ html.light ::-webkit-scrollbar-thumb {
   margin: 0.6em 0;
 }
 html.light .msg-content pre {
-  background: #F1EFEA;
-  border-color: #E4E2DC;
+  background: #EFEBE1;
+  border-color: #E7E4DA;
 }
 .msg-content code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9em;
 }
 .msg-content :not(pre) > code {
-  background: rgba(201, 162, 39, 0.15);
+  background: rgba(217, 119, 87, 0.15);
   padding: 0.15em 0.4em;
   border-radius: 5px;
 }
@@ -82,7 +82,7 @@ html.light .msg-content pre {
   margin: 0.4em 0;
 }
 .msg-content a {
-  color: #C9A227;
+  color: #D97757;
   text-decoration: underline;
 }
 .msg-content table {
@@ -92,19 +92,15 @@ html.light .msg-content pre {
   font-size: 0.9em;
 }
 .msg-content th, .msg-content td {
-  border: 1px solid #2A2E35;
+  border: 1px solid #3E3B36;
   padding: 6px 10px;
   text-align: left;
 }
 html.light .msg-content th, html.light .msg-content td {
-  border-color: #E4E2DC;
+  border-color: #E7E4DA;
 }
 
-html.light .bubble-assistant {
-  background: #FFFFFF;
-  border-color: #E4E2DC !important;
-}
 html.light .bubble-user {
-  background: rgba(184, 145, 31, 0.1);
-  border-color: rgba(184, 145, 31, 0.35);
+  background: rgba(217, 119, 87, 0.1);
+  border-color: rgba(217, 119, 87, 0.3);
 }

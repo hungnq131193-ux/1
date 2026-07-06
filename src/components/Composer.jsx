@@ -21,6 +21,31 @@ function readFileAsText(file) {
 
 const MAX_FILE_MB = 8;
 
+// Đuôi file coi là văn bản thuần khi trình duyệt không trả về (hoặc trả sai) mediaType,
+// ví dụ .ts thường bị nhận nhầm thành "video/mp2t".
+const TEXT_EXTENSIONS = new Set([
+  'txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'jsonl', 'xml', 'yaml', 'yml',
+  'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'py', 'rb', 'go', 'rs', 'java', 'kt',
+  'c', 'cpp', 'h', 'hpp', 'cs', 'php', 'sh', 'bash', 'zsh', 'sql', 'html', 'htm',
+  'css', 'scss', 'less', 'vue', 'svelte', 'log', 'ini', 'toml', 'env', 'conf',
+]);
+
+const TEXT_MEDIA_TYPES = new Set([
+  'application/json',
+  'application/xml',
+  'application/javascript',
+  'application/x-yaml',
+  'application/x-sh',
+  'application/toml',
+]);
+
+function isTextLikeFile(file) {
+  if (file.type.startsWith('text/')) return true;
+  if (TEXT_MEDIA_TYPES.has(file.type)) return true;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  return TEXT_EXTENSIONS.has(ext || '');
+}
+
 export default function Composer({ onSend, isStreaming, onStop }) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -57,10 +82,15 @@ export default function Composer({ onSend, isStreaming, onStop }) {
             ...prev,
             { name: file.name, mediaType: file.type, base64 },
           ]);
-        } else {
-          // Coi các file còn lại (txt, md, csv, code...) là văn bản thuần
+        } else if (isTextLikeFile(file)) {
           const content = await readFileAsText(file);
           setAttachments((prev) => [...prev, { name: file.name, text: content }]);
+        } else {
+          // File nhị phân (docx, xlsx, zip...) không đọc được thành văn bản —
+          // đọc bừa sẽ ra một loạt ký tự lỗi (mojibake), nên báo lỗi thay vì đính kèm.
+          setError(
+            `"${file.name}" không được hỗ trợ. Chỉ hỗ trợ ảnh, PDF, và file văn bản/code thuần.`
+          );
         }
       } catch {
         setError(`Không đọc được "${file.name}".`);
@@ -118,10 +148,10 @@ export default function Composer({ onSend, isStreaming, onStop }) {
         </div>
       )}
 
-      <div className="flex items-end gap-2 rounded-card border border-ink-line bg-ink-surface px-3 py-2">
+      <div className="flex items-end gap-2 rounded-full border border-ink-line bg-ink-surface px-3 py-2 shadow-sm">
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 rounded-lg text-white/60 hover:text-brass hover:bg-white/5 transition-colors shrink-0"
+          className="p-2 rounded-full text-white/60 hover:text-clay hover:bg-white/5 transition-colors shrink-0"
           aria-label="Đính kèm ảnh hoặc file"
           type="button"
         >
@@ -151,7 +181,7 @@ export default function Composer({ onSend, isStreaming, onStop }) {
         {isStreaming ? (
           <button
             onClick={onStop}
-            className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 transition-colors shrink-0"
+            className="p-2.5 rounded-full bg-white/10 hover:bg-white/15 transition-colors shrink-0"
             aria-label="Dừng trả lời"
             type="button"
           >
@@ -161,7 +191,7 @@ export default function Composer({ onSend, isStreaming, onStop }) {
           <button
             onClick={handleSend}
             disabled={!text.trim() && attachments.length === 0}
-            className="p-2.5 rounded-lg bg-brass text-ink disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brass-dark transition-colors shrink-0"
+            className="p-2.5 rounded-full bg-clay text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-clay-dark transition-colors shrink-0"
             aria-label="Gửi tin nhắn"
             type="button"
           >
