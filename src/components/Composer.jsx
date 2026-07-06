@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Paperclip, ArrowUp, Square, X } from 'lucide-react';
+import { Paperclip, ArrowUp, Square, X, FileArchive } from 'lucide-react';
+import { readZipFile } from '../lib/zip.js';
 
 function readFileAsBase64(file) {
   return new Promise((resolve, reject) => {
@@ -46,6 +47,18 @@ function isTextLikeFile(file) {
   return TEXT_EXTENSIONS.has(ext || '');
 }
 
+const ZIP_MEDIA_TYPES = new Set([
+  'application/zip',
+  'application/x-zip-compressed',
+  'application/x-zip',
+  'multipart/x-zip',
+]);
+
+function isZipFile(file) {
+  if (ZIP_MEDIA_TYPES.has(file.type)) return true;
+  return file.name.toLowerCase().endsWith('.zip');
+}
+
 export default function Composer({ onSend, isStreaming, onStop }) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -82,14 +95,21 @@ export default function Composer({ onSend, isStreaming, onStop }) {
             ...prev,
             { name: file.name, mediaType: file.type, base64 },
           ]);
+        } else if (isZipFile(file)) {
+          try {
+            const summary = await readZipFile(file);
+            setAttachments((prev) => [...prev, { name: file.name, text: summary, isZip: true }]);
+          } catch {
+            setError(`Không đọc được file ZIP "${file.name}" (có thể file bị hỏng).`);
+          }
         } else if (isTextLikeFile(file)) {
           const content = await readFileAsText(file);
           setAttachments((prev) => [...prev, { name: file.name, text: content }]);
         } else {
-          // File nhị phân (docx, xlsx, zip...) không đọc được thành văn bản —
+          // File nhị phân khác (docx, xlsx...) không đọc được thành văn bản —
           // đọc bừa sẽ ra một loạt ký tự lỗi (mojibake), nên báo lỗi thay vì đính kèm.
           setError(
-            `"${file.name}" không được hỗ trợ. Chỉ hỗ trợ ảnh, PDF, và file văn bản/code thuần.`
+            `"${file.name}" không được hỗ trợ. Chỉ hỗ trợ ảnh, PDF, ZIP, và file văn bản/code thuần.`
           );
         }
       } catch {
@@ -136,6 +156,8 @@ export default function Composer({ onSend, isStreaming, onStop }) {
                   className="h-5 w-5 object-cover rounded"
                   alt=""
                 />
+              ) : att.isZip ? (
+                <FileArchive size={14} />
               ) : (
                 '📎'
               )}
